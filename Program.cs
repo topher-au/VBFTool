@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
+using vbfextract.Properties;
 using VBFTool;
 
 namespace vbfextract
@@ -12,9 +14,20 @@ namespace vbfextract
     class Program
     {
         static VirtuosBigFileReader vbfReader = new VirtuosBigFileReader();
+
+        private static bool useAltFileList = false;
         private static string fileList = "filelist.txt";
-        private static string outputDir = "output";
-        const string OutPath = "output";
+
+        private static string outputDir = null;
+
+        private static string dict = null;
+
+        private static Dictionary<string, string> dictInternal = new Dictionary<string, string>()
+        {
+            { "ffx_data", "FFX_Data_1" },
+            { "ffx2_data", "FFX2_Data_1" },
+            { "metamenu", "metamenu_1" },
+        }; 
 
         static void Main(string[] args)
         {
@@ -53,6 +66,20 @@ namespace vbfextract
                         {
                             fileList = args[i + 1];
                             if (!File.Exists(fileList)) PrintHelp("The dictionary file specified does not exist");
+                            useAltFileList = true;
+                        }
+                        break;
+                    case "-d":
+                        if (i + 1 < args.Length)
+                        {
+                            try
+                            {
+                                dict = dictInternal[args[i + 1]];
+                            }
+                            catch
+                            {
+                                PrintHelp("The internal dictionary file specified does not exist");
+                            }
                         }
                         break;
                     default:
@@ -66,8 +93,9 @@ namespace vbfextract
                               "from a list of possible file names.\n");
             Console.WriteLine($"Usage: vbfextract <parameters> <filename>\n");
             Console.WriteLine("Valid parameters:\n" +
-                              " -o <directory>      Set output directory to <directory>\n" +
-                              " -f <file>           Read list of file names from <file>\n");
+                              " -o <directory>                          Set output directory to <directory>\n" +
+                              " -f <file>                               Read list of file names from <file>\n" +
+                              " -d <ffx_data/ffx2_data/metamenu>        Load a specific internal dictionary\n");
             Console.WriteLine(message);
             Environment.Exit(0);
         }
@@ -76,21 +104,66 @@ namespace vbfextract
         {
             vbfReader.LoadBigFileFile(vbfFile);
 
-            var fileDictionary = File.ReadAllLines(fileList);
-            var fixDictionary = new List<string>();
+            List<string> dictionary = new List<string>();
 
-            foreach(var file in fileDictionary)
-                if(!fixDictionary.Contains(file)) fixDictionary.Add(file);
+            if (useAltFileList)
+            {
+                // Load dictionary from file
+                Console.WriteLine($"Loading filename dictionary: {fileList}");
+                var fileDictionary = File.ReadAllLines(fileList);
 
-            foreach (string file in fixDictionary)
+                foreach (var file in fileDictionary)
+                    if (!dictionary.Contains(file)) dictionary.Add(file);
+            }
+            else
+            {
+                // Load internal dictionaries
+                Console.WriteLine("Loading internal dictionary...\n");
+
+                if (dict == null)
+                {
+                    var vbfName = Path.GetFileNameWithoutExtension(vbfFile)?.ToLower();
+                    if(vbfName == null) PrintHelp("Unable to automatically detect dictionary.\n Start with -d parameter to force dictionary type.");
+
+                    try
+                    {
+                        dict = dictInternal[vbfName];
+                    }
+                    catch
+                    {
+                        PrintHelp($"Unable to load dictionary for {vbfFile}.\nStart with -f or -d to manually specify the dictionary type.");
+                    }
+                }
+
+                string dictObj = (string)Resources.ResourceManager.GetObject(dict);
+                var dictLines = dictObj.Split('\n');
+                foreach (var line in dictLines)
+                {
+                    dictionary.Add(line.Trim('\0'));
+                }
+            }
+
+            // Attempt to extract files
+            if (outputDir == null)
+                outputDir = Path.GetFileNameWithoutExtension(vbfFile) + "_VBF";
+
+            foreach (string file in dictionary)
             {
                 try
                 {
                     var outPath = Path.Combine(outputDir, DenormalPath(file));
                     var outDir = Path.GetDirectoryName(outPath);
-                    if (!Directory.Exists(outDir)) Directory.CreateDirectory(outDir);
+                    if (outDir != null && !Directory.Exists(outDir)) Directory.CreateDirectory(outDir);
+
                     var extractedFile = vbfReader.ExtractFileContents(file, outPath);
-                    if (!extractedFile) continue; // No file found
+                    if (!extractedFile) {
+                        // File extraction failed
+                        try
+                        {
+                            File.Delete(outPath);
+                        } catch { }
+                        continue;
+                    }
                     Console.WriteLine($"Extracted {file}");
                 }
                 catch (Exception ex)
