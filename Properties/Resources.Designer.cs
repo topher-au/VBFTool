@@ -59,53 +59,5 @@ namespace vbfextract.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ffx_data/gamedata/ps3data/yonishi_data/dat_et/et_ffx/tex/texlist.txt
-        ///ffx_data/gamedata/ps3data/yonishi_data/dat_et/et_ffx/tex/d3d11/15040_19_0_0_128_128.dds.phyre
-        ///ffx_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/texlist.txt
-        ///ffx_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/d3d11/15392_19_0_0_128_64.dds.phyre
-        ///ffx_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/d3d11/15424_19_0_0_128_64.dds.phyre
-        ///ffx_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/ [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string FFX_Data_1 {
-            get {
-                return ResourceManager.GetString("FFX_Data_1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to ffx-2_data/gamedata/ps3data/yonishi_data/dat_et/et_ffx/tex/texlist.txt
-        ///ffx-2_data/gamedata/ps3data/yonishi_data/dat_et/et_ffx/tex/d3d11/15040_19_0_0_128_128.dds.phyre
-        ///ffx-2_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/texlist.txt
-        ///ffx-2_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/d3d11/15392_19_0_0_128_64.dds.phyre
-        ///ffx-2_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff/et_tex/tex/d3d11/15424_19_0_0_128_64.dds.phyre
-        ///ffx-2_data/gamedata/ps3data/yonishi_data/dat_et/bat_eff [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string FFX2_Data_1 {
-            get {
-                return ResourceManager.GetString("FFX2_Data_1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to metamenu/ps3data/menucredit/button_down.png
-        ///metamenu/ps3data/menucredit/button_over.png
-        ///metamenu/ps3data/menucredit/button_up.png
-        ///metamenu/ps3data/menucredit/credits_1280.png
-        ///metamenu/ps3data/menucredit/scollbar.png
-        ///metamenu/ps3data/menucredit/us/credits_logo.png
-        ///metamenu/ps3data/menucredit/sp/credits_logo.png
-        ///metamenu/ps3data/menucredit/kr/credits_logo.png
-        ///metamenu/ps3data/menucredit/jp/credits_logo.png
-        ///metamenu/ps3data/menucredit/it/credits_logo.png
-        ///metamenu/ps3data/menucredit/fr/credits_logo.png
-        ///metamenu [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string metamenu_1 {
-            get {
-                return ResourceManager.GetString("metamenu_1", resourceCulture);
-            }
-        }
     }
 }
