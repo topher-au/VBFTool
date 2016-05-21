@@ -6,44 +6,48 @@ using System.Reflection;
 using System.Resources;
 using System.Text;
 using System.Threading.Tasks;
-using vbfextract.Properties;
-using VBFTool;
+using VBFTool.Properties;
 
-namespace vbfextract
+namespace VBFTool
 {
     class Program
     {
         static VirtuosBigFileReader vbfReader = new VirtuosBigFileReader();
 
-        private static string fileList = null;
-
         private static string outputDir = null;
+
+        private static bool buildVbf = false;
+        private static string buildDir = string.Empty;
+
+        private static bool logEnabled = false;
+        private static string logFile = string.Empty;
 
         static void Main(string[] args)
         {
             var currentVersion = Assembly.GetEntryAssembly().GetName().Version;
-            var versionString = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
+            var versionString = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}.{currentVersion.Revision}";
 
-            Console.WriteLine($"VBF File Extractor v{versionString} by Topher\n------------------------------------\n");
+            Console.WriteLine($"VBFTool v{versionString} by Topher\n" +
+                              $"---------------------------\n");
 
-            if (args.Length == 1)
-            {
-                if (File.Exists(args[0]))
-                {
-                    ExtractVBF(args[0]);
-                }
-                    else PrintHelp("The specified file does not exist!");
+            var vbfFile = args[args.Length - 1];
 
-            }
-            else if (args.Length > 1)
+            if (args.Length > 1)
             {
                 ProcessArgs(args);
-                ExtractVBF(args[args.Length - 1]);
+            }
+
+            if (buildVbf)
+            {
+                BuildVBF(buildDir, vbfFile);
             }
             else
             {
-                PrintHelp();
+                if(!File.Exists(vbfFile))
+                    PrintHelp($"Unable to find file: {args[0]}");
+                ExtractVBF(vbfFile);
             }
+            Console.Read();
         }
 
         static void ProcessArgs(string[] args)
@@ -55,11 +59,20 @@ namespace vbfextract
                         if (i + 1 < args.Length)
                             outputDir = args[i + 1];
                         break;
-                    case "-f":
+                    case "-l":
                         if (i + 1 < args.Length)
                         {
-                            fileList = args[i + 1];
-                            if (!File.Exists(fileList)) PrintHelp("The dictionary file specified does not exist");
+                            logFile = args[i + 1];
+                            logEnabled = true;
+                        }
+                        break;
+                    case "-b":
+                        if (i + 1 < args.Length)
+                        {
+                            buildDir = args[i + 1];
+                            buildVbf = true;
+                            if (!Directory.Exists(buildDir))
+                                PrintHelp("Please specify a valid source directory!");
                         }
                         break;
                     default:
@@ -67,45 +80,39 @@ namespace vbfextract
                 }
         }
 
-        static void PrintHelp(string message = "")
+        static void PrintHelp(string message)
         {
-            Console.WriteLine("Attempt to extract files from a VBF container using filename hashes generated\n" +
-                              "from a list of possible file names.\n");
-            Console.WriteLine($"Usage: vbfextract <parameters> <filename>\n");
-            Console.WriteLine("Valid parameters:\n" +
-                              " -o <directory>                          Set output directory to <directory>\n" +
-                              " -f <file>                               Read list of file names from <file>\n");
-            Console.WriteLine(message);
+            Console.WriteLine("A tool for extracting and rebuilding VBF files for Final Fantasy X/X-2 HD Remaster\n");
+            Console.WriteLine($"Extraction:\n" +
+                              $"  vbfextract <-o OutputDirectory> <-l LogFile.txt> <InputFile.VBF>\n");
+            Console.WriteLine($"Rebuilding:\n" +
+                              $"  vbfextract -b [SourceDirectory] <OutputFile.VBF>\n");
+            Console.WriteLine("Parameters:\n" +
+                              "  -o     Extract files to [OutputDirectory]\n" +
+                              "  -l     Write extracted files to [LogFile.txt]\n" +
+                              "  -b     Build [OutputFile.VBF] from files contained in [SourceDirectory]");
+            if(message != string.Empty)
+                Console.WriteLine("\nAn error occured:\n    " + message);
             Environment.Exit(0);
+        }
+
+        static void BuildVBF(string inputDir, string vbfFile)
+        {
+            var vbfW = new VirtuosBigFileWriter();
+            vbfW.BuildVBF(inputDir, vbfFile);
         }
 
         static void ExtractVBF(string vbfFile)
         {
             vbfReader.LoadBigFileFile(vbfFile);
-
-            List<string> dictionary = new List<string>();
-
-            if (fileList == null)
-            {
-                // No file list specified, attempt to load automatically
-                var vbfList = Path.GetFileNameWithoutExtension(vbfFile) + ".txt";
-                if (!File.Exists(vbfList))
-                {
-                    PrintHelp($"Unable to load dictionary file {vbfList}.\nPlease specify a list file with the -f parameter.");
-                }
-                fileList = vbfList;
-            }
-
-            // Read dictionary from file
-            Console.WriteLine($"Loading filename dictionary: {fileList}");
-            dictionary = File.ReadAllLines(fileList).ToList();
+            var internalFileList = vbfReader.ReadFileList();
 
             // Attempt to extract files
             if (outputDir == null)
                 outputDir = Path.GetFileNameWithoutExtension(vbfFile) + "_VBF";
 
             var successCount = 0;
-            foreach (string file in dictionary)
+            foreach (string file in internalFileList)
             {
                 try
                 {
@@ -124,6 +131,7 @@ namespace vbfextract
                         continue;
                     }
                     Console.WriteLine($"Extracted {file}");
+                    if(logEnabled) File.AppendAllText(logFile, $"{file}\r\n");
                     successCount++;
                 }
                 catch (Exception ex)
@@ -133,7 +141,7 @@ namespace vbfextract
                 }
             }
 
-            Console.WriteLine($"\nExtraction completed successfully!\nExtracted {successCount}/{dictionary.Count} files");
+            Console.WriteLine($"\nExtraction completed successfully!\nExtracted {successCount}/{vbfReader.NumFiles} files");
         }
 
         static string DenormalPath(string path)

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("vbfextract")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("VBFTool")]
+[assembly: AssemblyDescription("A command-line utility for extracting and rebuilding data files included with Final Fantasy X/X-2 HD Remaster")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("vbfextract")]
+[assembly: AssemblyProduct("VBFTool")]
 [assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.3.0")]
+[assembly: AssemblyVersion("0.1.0.4")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
