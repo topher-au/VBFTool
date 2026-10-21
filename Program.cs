@@ -30,6 +30,9 @@ namespace VBFTool
             Console.WriteLine($"VBFTool v{versionString} by Topher\n" +
                               $"---------------------------\n");
 
+            if (args.Length == 0)
+                PrintHelp(string.Empty);
+
             var vbfFile = args[args.Length - 1];
 
             if (args.Length > 1)
